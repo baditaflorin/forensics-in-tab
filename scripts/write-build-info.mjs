@@ -3,6 +3,10 @@ import { readFileSync, writeFileSync } from 'node:fs';
 
 const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 
+if (process.env.PRESERVE_BUILD_INFO === '1') {
+  process.exit(0);
+}
+
 function run(command, fallback) {
   try {
     return execSync(command, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();

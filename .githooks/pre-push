@@ -2,5 +2,5 @@
 set -euo pipefail
 
 npm run test
-npm run build
-npm run smoke
+PRESERVE_BUILD_INFO=1 npm run build
+PRESERVE_BUILD_INFO=1 npm run smoke

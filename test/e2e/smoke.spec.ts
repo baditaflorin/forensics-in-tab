@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test('loads the static app and runs a local YARA scan', async ({ page }) => {
-  await page.goto('/forensics-in-tab/');
+  await page.goto('./');
   await expect(page.getByRole('heading', { name: 'Forensics in Tab' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Star on GitHub' })).toHaveAttribute(
     'href',

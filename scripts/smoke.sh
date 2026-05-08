@@ -3,7 +3,7 @@ set -euo pipefail
 
 npm run build
 
-PORT="${PORT:-4173}"
+PORT="${PORT:-$((4173 + RANDOM % 1000))}"
 node scripts/serve-pages.mjs "$PORT" >/tmp/forensics-in-tab-smoke.log 2>&1 &
 SERVER_PID=$!
 trap 'kill "$SERVER_PID" >/dev/null 2>&1 || true; wait "$SERVER_PID" 2>/dev/null || true' EXIT
@@ -22,4 +22,5 @@ if [ "$READY" != "1" ]; then
   exit 1
 fi
 
-npx playwright test test/e2e/smoke.spec.ts --config=playwright.config.ts
+PLAYWRIGHT_BASE_URL="http://127.0.0.1:$PORT/forensics-in-tab/" \
+  npx playwright test test/e2e/smoke.spec.ts --config=playwright.config.ts
