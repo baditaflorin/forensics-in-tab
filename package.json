@@ -16,7 +16,7 @@
     "dev": "vite",
     "prebuild": "node scripts/write-build-info.mjs && node scripts/prepare-pages.mjs",
     "build": "tsc -b && vite build && node scripts/validate-pages.mjs",
-    "pages-preview": "http-server docs -p 4173 -c-1",
+    "pages-preview": "node scripts/serve-pages.mjs 4173",
     "lint": "eslint . && prettier --check .",
     "fmt": "prettier --write .",
     "test": "vitest run --coverage=false",

@@ -21,4 +21,7 @@ const info = {
   paypal: 'https://www.paypal.com/paypalme/florinbadita'
 };
 
-writeFileSync(new URL('../public/build-info.json', import.meta.url), `${JSON.stringify(info, null, 2)}\n`);
+writeFileSync(
+  new URL('../public/build-info.json', import.meta.url),
+  `${JSON.stringify(info, null, 2)}\n`
+);

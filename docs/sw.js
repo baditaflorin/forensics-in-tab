@@ -10,7 +10,9 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))))
+      .then((keys) =>
+        Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)))
+      )
   );
   self.clients.claim();
 });
@@ -30,6 +32,10 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       })
-      .catch(() => caches.match(event.request).then((response) => response || caches.match('/forensics-in-tab/')))
+      .catch(() =>
+        caches
+          .match(event.request)
+          .then((response) => response || caches.match('/forensics-in-tab/'))
+      )
   );
 });
