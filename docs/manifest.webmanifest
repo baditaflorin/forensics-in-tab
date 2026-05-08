@@ -1,0 +1,11 @@
+{
+  "name": "Forensics in Tab",
+  "short_name": "Forensics",
+  "description": "Browser-only forensic triage without uploading evidence.",
+  "start_url": "/forensics-in-tab/",
+  "scope": "/forensics-in-tab/",
+  "display": "standalone",
+  "background_color": "#eff3f7",
+  "theme_color": "#1e7a78",
+  "icons": []
+}
