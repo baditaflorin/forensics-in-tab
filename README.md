@@ -11,6 +11,8 @@ Repository: https://github.com/baditaflorin/forensics-in-tab
 
 Support: https://www.paypal.com/paypalme/florinbadita
 
+![Forensics in Tab screenshot](docs/demo.png)
+
 ## Quickstart
 
 ```sh
@@ -36,13 +38,13 @@ flowchart LR
 
 ## Documentation
 
-Architecture: docs/architecture.md
+Architecture: https://github.com/baditaflorin/forensics-in-tab/blob/main/docs/architecture.md
 
-Deployment: docs/deploy.md
+Deployment: https://github.com/baditaflorin/forensics-in-tab/blob/main/docs/deploy.md
 
-Privacy: docs/privacy.md
+Privacy: https://github.com/baditaflorin/forensics-in-tab/blob/main/docs/privacy.md
 
-ADRs: docs/adr/
+ADRs: https://github.com/baditaflorin/forensics-in-tab/tree/main/docs/adr
 
 ## License
 
