@@ -10,12 +10,12 @@ Investigators may analyze sensitive files. Persistence must not surprise them.
 
 ## Decision
 
-Keep evidence files in memory only for v1. Persist only lightweight user preferences in `localStorage` if needed later. Do not store evidence in IndexedDB or OPFS until the UI provides explicit case lifecycle controls.
+Persist user settings in `localStorage` and persist explicit case sessions in browser-local IndexedDB when the investigator leaves restore enabled. Session exports use the same versioned JSON schema for offline backup and transfer.
 
 ## Consequences
 
-Closing the tab clears evidence. This is safer for v1 and avoids browser storage cleanup ambiguity.
+Investigators can refresh and resume work locally without introducing a backend. Evidence still stays in the browser, but local persistence must now be explained clearly in the UI and privacy docs.
 
 ## Alternatives Considered
 
-OPFS was considered for very large files but deferred until a deliberate case workspace model exists.
+Memory-only storage was sufficient for Phase 2, but it prevented a usable “resume later” workflow. OPFS was considered for very large files but deferred until a deliberate case workspace model exists.
