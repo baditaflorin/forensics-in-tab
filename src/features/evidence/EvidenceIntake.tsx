@@ -47,15 +47,26 @@ const acquisitionGuide: Record<string, AcquisitionEntry[]> = {
       ]
     },
     {
-      label: 'macOS — osxpmem',
-      cmds: ['sudo osxpmem memory.dmp'],
-      note: 'Requires SIP disabled or a signed build'
+      label: 'macOS — not practically possible on modern systems',
+      cmds: [
+        '# Apple blocked unsigned kernel extensions from El Capitan (2015) onward.',
+        '# On Apple Silicon the hardware itself prevents DMA-based memory reads.',
+        '#',
+        '# Options that do work:',
+        '#   - Suspend a VMware/Parallels/UTM VM → the .vmem file is a memory dump',
+        '#   - Use Cellebrite Digital Collector (paid commercial tool)',
+        '#   - Use Velociraptor for live OS-API-based volatile data collection',
+        '#   - On a test machine: disable SIP in recovery mode, then use older tools'
+      ],
+      note: 'osxpmem is unmaintained and non-functional on Ventura/Sonoma/Sequoia with SIP on'
     },
     {
-      label: 'VMware / VirtualBox',
+      label: 'VMware / VirtualBox / Parallels / UTM',
       cmds: [
-        '# VMware: suspend the VM — the .vmem file IS the memory dump',
-        '# VirtualBox: File → Export Appliance or use vboxmanage debugvm'
+        '# VMware: suspend the VM — the .vmem file IS the memory image',
+        '# VirtualBox: suspend → find the .sav file next to the .vbox file',
+        '# Parallels/UTM: suspend → .mem or .vmem file in the VM bundle',
+        '# Drag-drop that file directly into this app'
       ]
     }
   ],
