@@ -23,4 +23,4 @@ if [ "$READY" != "1" ]; then
 fi
 
 PLAYWRIGHT_BASE_URL="http://127.0.0.1:$PORT/forensics-in-tab/" \
-  npx playwright test test/e2e/smoke.spec.ts --config=playwright.config.ts
+  npx playwright test test/e2e/*.spec.ts --config=playwright.config.ts

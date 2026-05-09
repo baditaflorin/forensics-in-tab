@@ -1,5 +1,7 @@
-import { ArchiveRestore, HardDrive } from 'lucide-react';
+import { ArchiveRestore, Download, HardDrive } from 'lucide-react';
 import { formatBytes, formatOffset } from '../../lib/bytes';
+import { downloadCsvFile } from '../../lib/export';
+import { EmptyState, PanelCard } from '../../ui/PanelCard';
 import type { DiskAnalysis } from './disk';
 
 interface DiskPanelProps {
@@ -8,16 +10,35 @@ interface DiskPanelProps {
 
 export function DiskPanel({ analysis }: DiskPanelProps) {
   if (!analysis) {
-    return <EmptyPanel label="Load evidence to inspect disk structures." />;
+    return <EmptyState label="Load evidence to inspect disk structures." />;
   }
 
   return (
     <section className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-      <div className="rounded-lg bg-white p-5 shadow-panel">
-        <div className="flex items-center gap-3">
-          <HardDrive className="text-signal" aria-hidden="true" />
-          <h2 className="text-xl font-semibold">Partition Map</h2>
-        </div>
+      <PanelCard
+        title="Partition Map"
+        icon={<HardDrive aria-hidden="true" />}
+        actions={
+          <button
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slatewash"
+            type="button"
+            onClick={() =>
+              downloadCsvFile('forensics-in-tab-partitions.csv', [
+                ['slot', 'type', 'start_lba', 'size_bytes'],
+                ...analysis.partitions.map((partition) => [
+                  String(partition.index),
+                  partition.type,
+                  String(partition.lbaStart),
+                  String(partition.sizeBytes)
+                ])
+              ])
+            }
+          >
+            <Download aria-hidden="true" size={16} />
+            Export CSV
+          </button>
+        }
+      >
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="text-slate-500">
@@ -48,13 +69,34 @@ export function DiskPanel({ analysis }: DiskPanelProps) {
           </table>
         </div>
         <p className="mt-4 text-sm text-slate-600">Entropy sample: {analysis.entropy.toFixed(2)}</p>
-      </div>
+      </PanelCard>
 
-      <div className="rounded-lg bg-white p-5 shadow-panel">
-        <div className="flex items-center gap-3">
-          <ArchiveRestore className="text-evidence" aria-hidden="true" />
-          <h2 className="text-xl font-semibold">Recovered Files</h2>
-        </div>
+      <PanelCard
+        title="Recovered Files"
+        icon={<ArchiveRestore className="text-evidence" aria-hidden="true" />}
+        actions={
+          <button
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slatewash"
+            type="button"
+            onClick={() =>
+              downloadCsvFile('forensics-in-tab-artifacts.csv', [
+                ['kind', 'offset', 'size', 'extension', 'confidence', 'preview'],
+                ...analysis.artifacts.map((artifact) => [
+                  artifact.kind,
+                  String(artifact.offset),
+                  String(artifact.size),
+                  artifact.extension,
+                  artifact.confidence,
+                  artifact.previewAscii
+                ])
+              ])
+            }
+          >
+            <Download aria-hidden="true" size={16} />
+            Export CSV
+          </button>
+        }
+      >
         <div className="mt-4 grid gap-3">
           {analysis.artifacts.map((artifact) => (
             <article key={artifact.id} className="rounded-lg border border-slate-200 p-3">
@@ -77,15 +119,7 @@ export function DiskPanel({ analysis }: DiskPanelProps) {
             <p className="text-sm text-slate-500">No recoverable signatures found.</p>
           ) : null}
         </div>
-      </div>
-    </section>
-  );
-}
-
-function EmptyPanel({ label }: { label: string }) {
-  return (
-    <section className="rounded-lg bg-white p-5 text-sm text-slate-500 shadow-panel">
-      {label}
+      </PanelCard>
     </section>
   );
 }

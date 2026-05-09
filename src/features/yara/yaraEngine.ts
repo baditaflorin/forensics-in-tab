@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { bytesToHex, collectPatternOffsets } from '../../lib/bytes';
 import { evaluateBooleanExpression } from './condition';
 
@@ -33,6 +34,24 @@ export interface YaraScanResult {
   rules: YaraRuleMatch[];
   errors: string[];
 }
+
+export const yaraStringMatchSchema = z.object({
+  id: z.string(),
+  offsets: z.array(z.number().int().nonnegative()),
+  sample: z.string()
+});
+
+export const yaraRuleMatchSchema = z.object({
+  rule: z.string(),
+  matched: z.boolean(),
+  strings: z.array(yaraStringMatchSchema),
+  condition: z.string()
+});
+
+export const yaraScanResultSchema = z.object({
+  rules: z.array(yaraRuleMatchSchema),
+  errors: z.array(z.string())
+});
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();

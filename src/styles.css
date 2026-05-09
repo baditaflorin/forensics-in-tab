@@ -14,6 +14,10 @@ body {
   margin: 0;
 }
 
+body {
+  background: #f4f7fb;
+}
+
 button,
 input,
 textarea,
@@ -28,4 +32,10 @@ textarea:focus-visible,
 select:focus-visible {
   outline: 3px solid #1e7a78;
   outline-offset: 3px;
+}
+
+@media print {
+  body {
+    background: white;
+  }
 }

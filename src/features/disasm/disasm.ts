@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { bytesToHex, clampSlice, formatOffset, readUInt32LE } from '../../lib/bytes';
 
 export type DisasmArchitecture = 'x86-16' | 'x86-32' | 'x86-64' | 'arm64';
@@ -21,6 +22,19 @@ export interface DisasmResult {
   instructions: DisasmInstruction[];
   warning?: string;
 }
+
+export const disasmInstructionSchema = z.object({
+  address: z.string(),
+  bytes: z.string(),
+  mnemonic: z.string(),
+  operands: z.string()
+});
+
+export const disasmResultSchema = z.object({
+  engine: z.enum(['capstone-wasm', 'fallback-x86']),
+  instructions: z.array(disasmInstructionSchema),
+  warning: z.string().optional()
+});
 
 export async function disassemble(
   bytes: Uint8Array,
