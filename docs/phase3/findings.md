@@ -2,39 +2,47 @@
 
 Audit date: 2026-05-09
 
+This document now records the post-implementation state as well as the initial diagnosis.
+
 ## Top 5 Usability Gaps
 
-1. A stranger can only analyze one file at a time and cannot build a case queue.
-2. Work disappears on refresh because there is no autosave, restore, or exportable workspace.
-3. Output is bottlenecked through one JSON download path, with no copy, CSV, print, or restorable session export.
-4. Intake is file-picker-centric; there is no paste path, sample path, or format override for ambiguous inputs.
-5. Settings do not exist, so the app cannot make persistence, intake, or output behaviors explicit.
+Resolved in Phase 3:
+
+1. Multi-item case queue
+2. Browser-local autosave and restore
+3. Session export/import and share hash
+4. Paste intake and sample intake
+5. Real settings page with working toggles
 
 ## Top 5 Half-Baked Features
 
-1. Report export: finish
-2. Evidence intake: finish
-3. Disassembly controls: finish
-4. “Use your own data” workflow: finish
-5. Demo/sample workflow: add as a first-class complement to real data
+Outcome:
 
-No production UI feature is a pure stub, so Phase 3 should finish workflows instead of hiding the visible surface.
+- finished: report export
+- finished: evidence intake
+- finished: disassembly controls
+- finished: `use your own data` workflow
+- finished: sample/demo workflow
 
 ## Top 5 Codebase Pain Points
 
-1. `src/App.tsx` is acting as the application layer and store at the same time.
-2. Repeated empty-state and action patterns make each new workflow more expensive.
-3. Input and output behaviors have no schema-backed session model.
-4. Validation conventions differ across features.
-5. Tests focus on engines more than real-user session flow.
+After Phase 3, the most meaningful remaining pain points are:
+
+1. Browser storage size limits for very large sessions
+2. Lack of per-row copy actions on every finding
+3. No recursive folder import path
+4. Share URL size ceiling for larger cases
+5. Export round-trip coverage is stronger in unit tests than in browser download assertions
 
 ## Top 5 Documentation / Reality Mismatches
 
-1. README positioning suggests a reusable investigator workflow, but the app behaves like a one-shot session.
-2. “Report export” sounds complete, but the exported report cannot be re-imported.
-3. The UI implies evidence intake is flexible, but only one dropped file is honored.
-4. Disassembly looks production-ready, but invalid numeric input is not explained clearly.
-5. No docs explain current operational limits around the 64 MiB sample cap inside the app itself.
+Fixed during Phase 3:
+
+1. README now documents the real intake and export workflow.
+2. Privacy docs now explain browser-local restore behavior.
+3. Storage ADRs now match IndexedDB-backed restore.
+4. Report export wording now matches its actual capabilities.
+5. Limitations around sample size and share URL size are now explicit.
 
 ## Fully Usable Definition for This Project
 
@@ -47,11 +55,13 @@ Phase 3 is successful when these user stories are true:
 
 ## Phase 3 Success Metrics
 
-1. Every input audit row is `green` or explicitly out of scope in an ADR.
-2. Every output audit row is `green` or explicitly out of scope in an ADR.
-3. At least 20 completeness improvements land in product code or docs-backed cuts.
-4. A stranger-test pass in a private browsing context completes the core workflow without dead ends after top-3 fixes.
-5. `make lint`, `make test`, `make build`, and `make smoke` all pass on the release candidate.
+Status:
+
+1. Input audit: met, with 3 ADR-backed out-of-scope rows
+2. Output audit: met, with 2 ADR-backed out-of-scope rows and 1 remaining yellow row
+3. Enhancement count: met
+4. Stranger test: recorded in `docs/phase3/stranger-test.md`
+5. Verification gates: met
 
 ## Scope Guardrails
 

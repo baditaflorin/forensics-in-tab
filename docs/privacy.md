@@ -10,9 +10,9 @@ Nothing in v1. There is no analytics script, beacon, runtime backend, database, 
 
 ## Evidence Handling
 
-Evidence files are read with browser File APIs after the investigator selects or drops them. The app samples up to 64 MiB for v1 triage and keeps bytes in tab memory.
+Evidence files are read with browser File APIs after the investigator selects, drops, pastes, or restores them. The app samples up to 64 MiB per evidence item for local triage.
 
-Evidence is not uploaded by the app. Closing or refreshing the tab clears the in-memory evidence state.
+Evidence is not uploaded by the app. If the investigator leaves “Restore last case on reopen” enabled, the current local case is saved in browser-local IndexedDB so a refresh can restore it later. Turning that setting off clears the autosaved case. Session exports are saved only when the investigator explicitly downloads them.
 
 ## Network Requests
 

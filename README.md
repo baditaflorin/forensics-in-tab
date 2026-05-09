@@ -13,6 +13,19 @@ Support: https://www.paypal.com/paypalme/florinbadita
 
 ![Forensics in Tab screenshot](docs/demo.png)
 
+## Verified Features
+
+- Multi-file file-picker and drag-drop intake
+- Paste intake for text, hex, and base64
+- Sample evidence loader for first-run exploration
+- Local case queue with per-item type override
+- Disk carving and partition triage on the active evidence item
+- Memory IOC extraction and PE hint triage
+- Local YARA subset scanning with reusable rules
+- Capstone-backed disassembly with CSV export
+- JSON report export, clipboard copy, print view, and restorable session export
+- Browser-local case restore with IndexedDB and shareable URL hashes for small sessions
+
 ## Quickstart
 
 ```sh
@@ -25,7 +38,7 @@ make build
 
 ## Architecture
 
-Forensics in Tab is a pure GitHub Pages app. Evidence files are read by the browser, analyzed locally, and never sent to a server.
+Forensics in Tab is a pure GitHub Pages app. Evidence files are read by the browser, analyzed locally, and never sent to a server. Optional resume-later persistence stays in the same browser through IndexedDB; there is still no runtime backend.
 
 ```mermaid
 flowchart LR
@@ -47,6 +60,14 @@ Privacy: https://github.com/baditaflorin/forensics-in-tab/blob/main/docs/privacy
 ADRs: https://github.com/baditaflorin/forensics-in-tab/tree/main/docs/adr
 
 Postmortem: https://github.com/baditaflorin/forensics-in-tab/blob/main/docs/postmortem.md
+
+Phase 3 postmortem: https://github.com/baditaflorin/forensics-in-tab/blob/main/docs/postmortem-phase3.md
+
+## Limitations
+
+- The app samples up to 64 MiB per evidence item for browser-local triage.
+- Shareable URLs are only practical for small sessions; larger cases should use session export.
+- URL-based remote evidence intake is intentionally out of scope in Mode A because CORS and remote fetching would imply a workflow the static app cannot guarantee.
 
 ## License
 

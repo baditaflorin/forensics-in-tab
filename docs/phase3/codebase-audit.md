@@ -2,31 +2,22 @@
 
 Audit date: 2026-05-09
 
-This audit is measurement only. No code changes were made before writing it.
+This document was refreshed after the Phase 3 implementation landed.
 
 ## DRY Violations
 
-1. Empty-panel states are repeated in:
-   - `src/features/disk/DiskPanel.tsx`
-   - `src/features/memory/MemoryPanel.tsx`
-   - `src/features/yara/YaraPanel.tsx`
-   - `src/features/disasm/DisasmPanel.tsx`
-   - `src/features/report/ReportPanel.tsx`
-2. Download/export mechanics are local-only and one-off in:
-   - `src/features/report/ReportPanel.tsx`
-3. Evidence lifecycle state is concentrated in `src/App.tsx`, where loading, resets of downstream state, and tab routing all happen together.
+No core DRY violations remain in the workflow modules audited for Phase 3. Shared concerns were consolidated into:
+
+- `src/ui/PanelCard.tsx`
+- `src/lib/export.ts`
+- `src/app/session.ts`
+- `src/app/persistence.ts`
+- `src/app/useForensicsSession.ts`
 
 ## SOLID / Responsibility Issues
 
-1. `src/App.tsx` owns too many concerns:
-   - evidence loading
-   - active evidence selection
-   - analysis orchestration
-   - tab navigation
-   - error handling
-   - report composition wiring
-2. `src/features/evidence/EvidenceIntake.tsx` is a UI component but also encodes intake workflow policy.
-3. `src/features/disasm/DisasmPanel.tsx` performs parsing, validation, async orchestration, and rendering in one component.
+1. `src/App.tsx` still composes the product surface, but persistence and workflow state now live in `src/app/useForensicsSession.ts`.
+2. `src/features/evidence/EvidenceIntake.tsx` still owns some intake-specific UX policy, but parsing and state persistence moved out of the component.
 
 ## Dead Code / Dormant Paths
 
@@ -35,31 +26,30 @@ This audit is measurement only. No code changes were made before writing it.
 
 ## Type-Safety Holes
 
-1. Unsafe cast in `src/features/disasm/DisasmPanel.tsx` when reading the architecture select value.
-2. Unsafe `ArrayBuffer` cast in `src/features/evidence/evidence.ts` when hashing copied bytes.
-3. No schema boundary exists for imported persisted state because persisted state does not exist yet.
+Boundary validation now exists for:
+
+- saved sessions
+- shared session hashes
+- build metadata
+- disassembly architecture selection
 
 ## Inconsistent Patterns
 
-1. Some panels use inline empty states while `DiskPanel` has a local `EmptyPanel` helper.
-2. Export logic lives inside the report panel instead of a shared action layer.
-3. Input validation varies between engines:
-   - YARA rules are parsed with explicit errors.
-   - Disassembly numeric parameters are passed through `Number(...)` with no user-facing validation.
+1. Panel shells and empty states are now consistent across the main workflow panels.
+2. Export logic is centralized in `src/lib/export.ts`.
+3. Persisted workflow state is centralized in `src/app`.
 
 ## Test Coverage Holes
 
-1. No tests cover user-owned input paths beyond file upload in the smoke test.
-2. No tests cover persistence because it does not exist.
-3. No tests cover export round-trips.
-4. No tests cover documentation claims against UI behavior.
+1. Export round-trips are still exercised mostly through session serialization tests rather than end-to-end browser downloads.
+2. Individual row copy actions are not tested because they are not yet shipped.
 
 ## Counts
 
-- DRY issues called out: 3 clusters
-- SOLID issues called out: 3
+- DRY issues called out: 0 unresolved core clusters
+- SOLID issues called out: 2 accepted minor concerns
 - TODO/FIXME/XXX/HACK markers: 0
 - Explicit `any` in authored app source: 0
 - `@ts-ignore` markers in authored app source: 0
 
-The codebase is pleasantly small, but the state and workflow logic have not yet been given a durable home. That is the main source of Phase 3 friction.
+The codebase now has a real application layer for persistence and session flow. The remaining risk is not structural chaos; it is the usual small-app tradeoff of keeping orchestration understandable without over-building it.
