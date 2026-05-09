@@ -1,10 +1,172 @@
-import { FileUp, FlaskConical, FolderInput, ShieldCheck, Trash2, Upload, X } from 'lucide-react';
+import {
+  BookOpen,
+  ChevronDown,
+  ChevronRight,
+  FileUp,
+  FlaskConical,
+  FolderInput,
+  ShieldCheck,
+  Trash2,
+  Upload,
+  X
+} from 'lucide-react';
 import { useId, useState } from 'react';
 import type { EvidenceEntry } from '../../app/session';
 import { formatBytes } from '../../lib/bytes';
 import { evidenceKindSchema, type EvidenceKind } from './evidence';
 
 type PasteMode = 'auto' | 'text' | 'hex' | 'base64';
+
+interface AcquisitionEntry {
+  label: string;
+  cmds: string[];
+  note?: string;
+}
+
+const acquisitionGuide: Record<string, AcquisitionEntry[]> = {
+  'Memory dump': [
+    {
+      label: 'Windows — WinPmem (open source)',
+      cmds: [
+        'winpmem_mini_x64.exe memory.dmp',
+        '# outputs a raw memory image you can load here'
+      ],
+      note: 'Download from github.com/Velocidex/WinPmem'
+    },
+    {
+      label: 'Windows — DumpIt (Magnet / free)',
+      cmds: ['DumpIt.exe /OUTPUT memory.dmp'],
+      note: 'Download from magnetforensics.com/resources/magnet-dumpit-for-windows'
+    },
+    {
+      label: 'Linux — /proc/kcore or LiME',
+      cmds: [
+        'sudo cp /proc/kcore memory.dmp',
+        '# or use LiME kernel module for a clean dump',
+        'sudo insmod lime-$(uname -r).ko "path=/tmp/memory.lime format=lime"'
+      ]
+    },
+    {
+      label: 'macOS — osxpmem',
+      cmds: ['sudo osxpmem memory.dmp'],
+      note: 'Requires SIP disabled or a signed build'
+    },
+    {
+      label: 'VMware / VirtualBox',
+      cmds: [
+        '# VMware: suspend the VM — the .vmem file IS the memory dump',
+        '# VirtualBox: File → Export Appliance or use vboxmanage debugvm'
+      ]
+    }
+  ],
+  'Disk image': [
+    {
+      label: 'Linux / macOS — dd',
+      cmds: [
+        'sudo dd if=/dev/sda of=disk.img bs=4M status=progress',
+        'sudo dd if=/dev/disk2 of=disk.img bs=4m'
+      ]
+    },
+    {
+      label: 'Linux — dcfldd (enhanced dd with hashing)',
+      cmds: ['sudo dcfldd if=/dev/sda of=disk.img hash=sha256 hashlog=disk.sha256']
+    },
+    {
+      label: 'Windows — FTK Imager (free GUI)',
+      cmds: ['# File → Create Disk Image → select drive → raw (dd) format'],
+      note: 'Download from exterro.com/digital-forensics-software/ftk-imager'
+    },
+    {
+      label: 'Cross-platform — Autopsy / Sleuth Kit',
+      cmds: ['# New Case → Add Data Source → select disk'],
+      note: 'autopsy.com'
+    }
+  ],
+  'Binary / shellcode snippet': [
+    {
+      label: 'Extract from a running process (Windows)',
+      cmds: [
+        'procdump -ma <pid> process.dmp',
+        '# or use Process Hacker: right-click process → Miscellaneous → Dump'
+      ]
+    },
+    {
+      label: 'Copy bytes from a hex editor',
+      cmds: ['# Open any file in HxD / 010 Editor, select region, Edit → Copy As → Hex String'],
+      note: 'Then paste directly into the Paste Intake box below and pick Hex mode'
+    }
+  ]
+};
+
+function AcquisitionGuide() {
+  const [open, setOpen] = useState(false);
+  const [section, setSection] = useState<string>(Object.keys(acquisitionGuide)[0]);
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-slate-50">
+      <button
+        className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-100"
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+      >
+        {open ? (
+          <ChevronDown aria-hidden="true" size={16} />
+        ) : (
+          <ChevronRight aria-hidden="true" size={16} />
+        )}
+        <BookOpen aria-hidden="true" size={16} />
+        <span>How to acquire evidence files</span>
+        {!open && (
+          <span className="ml-auto font-normal text-slate-500">
+            memory dumps, disk images, binary samples
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className="border-t border-slate-200 p-4">
+          <p className="mb-3 text-sm text-slate-600">
+            This app analyses files you already have. Use one of the methods below to create them,
+            then drag-drop or click <strong>Add Evidence</strong>.
+          </p>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {Object.keys(acquisitionGuide).map((key) => (
+              <button
+                key={key}
+                className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
+                  section === key
+                    ? 'bg-ink text-white'
+                    : 'border border-slate-300 hover:bg-white'
+                }`}
+                type="button"
+                onClick={() => setSection(key)}
+              >
+                {key}
+              </button>
+            ))}
+          </div>
+          <div className="grid gap-4">
+            {acquisitionGuide[section]?.map((entry) => (
+              <div key={entry.label} className="rounded-lg border border-slate-200 bg-white p-3">
+                <p className="text-sm font-semibold text-slate-800">{entry.label}</p>
+                {entry.note && (
+                  <p className="mt-0.5 text-xs text-slate-500">{entry.note}</p>
+                )}
+                <pre className="mt-2 overflow-x-auto rounded bg-slate-900 p-3 text-xs leading-relaxed text-green-300">
+                  {entry.cmds.join('\n')}
+                </pre>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-slate-500">
+            Files accepted: <code>.dmp .mem .vmem .lime</code> (memory) ·{' '}
+            <code>.img .dd .raw .iso</code> (disk) · any binary or text paste
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface EvidenceIntakeProps {
   evidence: EvidenceEntry[];
@@ -137,6 +299,10 @@ export function EvidenceIntake({
             Start Fresh
           </button>
         </div>
+      </div>
+
+      <div className="mt-4">
+        <AcquisitionGuide />
       </div>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">

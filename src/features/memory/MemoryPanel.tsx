@@ -1,9 +1,41 @@
-import { Binary, Cpu, Download } from 'lucide-react';
+import { Binary, Check, Clipboard, Cpu, Download } from 'lucide-react';
+import { useState } from 'react';
 import { formatOffset } from '../../lib/bytes';
 import { downloadCsvFile } from '../../lib/export';
 import { EmptyState, PanelCard } from '../../ui/PanelCard';
 import type { MemoryAnalysis } from './memory';
 import { formatPeFinding } from './memory';
+
+import type { IocFinding } from './memory';
+
+function IocRow({ ioc }: { ioc: IocFinding }) {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy() {
+    void navigator.clipboard.writeText(ioc.value).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  }
+
+  return (
+    <tr className="group border-t border-slate-200">
+      <td className="py-2 capitalize">{ioc.type}</td>
+      <td className="max-w-[28rem] break-all font-mono text-xs">{ioc.value}</td>
+      <td className="font-mono text-xs">{formatOffset(ioc.offset)}</td>
+      <td className="pl-2">
+        <button
+          className="rounded p-1 text-slate-400 opacity-0 transition hover:text-slate-700 group-hover:opacity-100"
+          title="Copy value"
+          type="button"
+          onClick={handleCopy}
+        >
+          {copied ? <Check size={14} /> : <Clipboard size={14} />}
+        </button>
+      </td>
+    </tr>
+  );
+}
 
 interface MemoryPanelProps {
   analysis?: MemoryAnalysis;
@@ -42,22 +74,16 @@ export function MemoryPanel({ analysis }: MemoryPanelProps) {
                 <th className="py-2">Type</th>
                 <th>Value</th>
                 <th>Offset</th>
+                <th aria-label="Copy" />
               </tr>
             </thead>
             <tbody>
               {analysis.iocs.map((ioc) => (
-                <tr
-                  key={`${ioc.type}-${ioc.value}-${ioc.offset}`}
-                  className="border-t border-slate-200"
-                >
-                  <td className="py-2 capitalize">{ioc.type}</td>
-                  <td className="max-w-[28rem] break-all font-mono text-xs">{ioc.value}</td>
-                  <td className="font-mono text-xs">{formatOffset(ioc.offset)}</td>
-                </tr>
+                <IocRow key={`${ioc.type}-${ioc.value}-${ioc.offset}`} ioc={ioc} />
               ))}
               {analysis.iocs.length === 0 ? (
                 <tr>
-                  <td className="py-3 text-slate-500" colSpan={3}>
+                  <td className="py-3 text-slate-500" colSpan={4}>
                     No IOC-shaped strings found.
                   </td>
                 </tr>

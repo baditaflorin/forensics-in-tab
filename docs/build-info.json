@@ -1,9 +1,9 @@
 {
   "name": "forensics-in-tab",
-  "version": "0.2.0",
-  "commit": "edac491",
-  "fullCommit": "edac4917c8b91a3e634980160a6cb355d5847555",
-  "builtAt": "2026-05-09T16:17:28.558Z",
+  "version": "0.3.0",
+  "commit": "be1c03f",
+  "fullCommit": "be1c03f8eeb8e8dd17f88ee24b95d98773f3a5f9",
+  "builtAt": "2026-05-09T20:25:36.157Z",
   "repository": "https://github.com/baditaflorin/forensics-in-tab",
   "paypal": "https://www.paypal.com/paypalme/florinbadita"
 }
