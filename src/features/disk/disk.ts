@@ -166,6 +166,91 @@ export function parseMbrPartitions(bytes: Uint8Array): PartitionEntry[] {
   return partitions;
 }
 
+/**
+ * Maximum start-pattern length across every signature. Used as the
+ * overlap when streaming-carving large evidence so a signature that
+ * straddles a window boundary still matches in the next window.
+ */
+const MAX_SIGNATURE_LENGTH = signatures.reduce(
+  (max, sig) => Math.max(max, sig.start.length, sig.end?.length ?? 0),
+  0
+);
+
+/**
+ * Carve artifacts across an arbitrarily large source by walking it in
+ * overlapping windows. The disk.ts cap of 64 MiB applies to the
+ * synchronous `carveArtifacts` (which keeps everything in one
+ * Uint8Array); when a caller has a larger source available it can ask
+ * for chunked carving — e.g. via a streamed `File.slice()` reader —
+ * and get artifacts pinned to absolute offsets in the original source.
+ *
+ * The async-iterable parameter mirrors `ReadableStreamDefaultReader`
+ * shape so callers can plug in either a real `File`-backed stream or
+ * a synthetic one in tests without depending on the DOM.
+ */
+export async function carveArtifactsStreaming(
+  reader: {
+    next(): Promise<{ done: boolean; value?: Uint8Array; baseOffset: number }>;
+  },
+  maxArtifacts = 80
+): Promise<RecoveredArtifact[]> {
+  const all: RecoveredArtifact[] = [];
+  const seen = new Set<string>();
+  // The overlap region is duplicated between adjacent windows so a
+  // pattern straddling the seam still resolves. We tag each artifact
+  // by absolute offset and skip duplicates from the overlap.
+  for (;;) {
+    const chunk = await reader.next();
+    if (chunk.done || !chunk.value) break;
+    const local = carveArtifacts(chunk.value, maxArtifacts);
+    for (const artifact of local) {
+      const absolute = artifact.offset + chunk.baseOffset;
+      const key = `${artifact.extension}-${absolute}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      all.push({
+        ...artifact,
+        offset: absolute,
+        id: `${artifact.extension}-${formatOffset(absolute)}`
+      });
+      if (all.length >= maxArtifacts) return all.sort((a, b) => a.offset - b.offset);
+    }
+  }
+  return all.sort((a, b) => a.offset - b.offset);
+}
+
+/**
+ * Build a chunk-reader that walks a `File` (or anything with a
+ * `slice(start, end)` returning an ArrayBuffer-yielding object) in
+ * overlapping windows. Used by `carveArtifactsStreaming` to scan a
+ * whole disk image without materialising it all in memory.
+ */
+export function chunkedFileReader(
+  source: { size: number; slice: (start: number, end: number) => Blob },
+  options: { windowBytes?: number } = {}
+): { next(): Promise<{ done: boolean; value?: Uint8Array; baseOffset: number }> } {
+  const windowBytes = options.windowBytes ?? 32 * 1024 * 1024;
+  const overlap = MAX_SIGNATURE_LENGTH;
+  let cursor = 0;
+  return {
+    async next() {
+      if (cursor >= source.size) {
+        return { done: true, baseOffset: cursor };
+      }
+      const start = cursor;
+      const end = Math.min(source.size, cursor + windowBytes);
+      const slice = source.slice(start, end);
+      const buffer = await slice.arrayBuffer();
+      const value = new Uint8Array(buffer);
+      // Advance by windowBytes - overlap so adjacent windows share
+      // the overlap region. Never advance by less than 1 byte (would
+      // happen if windowBytes were absurdly small).
+      cursor += Math.max(1, windowBytes - overlap);
+      return { done: false, value, baseOffset: start };
+    }
+  };
+}
+
 export function carveArtifacts(bytes: Uint8Array, maxArtifacts = 80): RecoveredArtifact[] {
   const artifacts: RecoveredArtifact[] = [];
 
